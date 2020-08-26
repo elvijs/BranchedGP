@@ -17,29 +17,12 @@ An example of what the model can provide is shown below.
 <img src="images/VAMP5_BGPAssignmentProbability.png" width="400" height="400" align="middle"/>
 
 # Install
-If you have any problems with installation see the script at the bottom of the page for a detailed setup guide from a new python environment. 
 
-   - Install tensorflow
-```
-pip install tensorflow
-```
-   - Install GPflow
-```
-git clone https://github.com/GPflow/GPflow.git
-cd GPflow    
-pip install .
-cd
-```
-    
-See [GPFlow](https://github.com/GPflow/GPflow) page for more detailed instructions.
+We use [Poetry](https://python-poetry.org/) to manage and install dependencies.
+To install the package in a local virtual environment:
+* [Install poetry](https://python-poetry.org/docs/#installation), and
+* Run `poetry install`.
 
-   - Install Branched GP package
-```
-git clone https://github.com/ManchesterBioinference/BranchedGP
-cd BranchedGP
-python setup.py install
-cd
-```
 # Quick start
 For a quick introduction see the `notebooks/Hematopoiesis.ipynb` notebook.
 Therein we demonstrate how to fit the model and compute
@@ -49,16 +32,6 @@ The Bayes factor in particular is calculated by calling `CalculateBranchingEvide
 after fitting the model using `FitModel`.
 
 This notebook should take a total of 6 minutes to run.
-
-# Tests
-To run the tests should takes < 3min.
-```
-pip install nose
-pip install nose-timer
-cd BranchedGP/testing
-nosetests --pdb-failures --pdb --with-timer
-```
-
 
 # List of notebooks
 To run the notebooks
@@ -90,13 +63,36 @@ Monocle and BEAM on the hematopoiesis data is included.
 | BranchingTree.py | Code to generate branching tree. |
 | VBHelperFunctions.py | Plotting code. |
 
-# Running in a cluster
-When running BranchingGP in a cluster it may be useful to constrain the number of cores used. To do this insert this code at the beginning of your script.
-```
-from gpflow import settings
-settings.session.intra_op_parallelism_threads = NUMCORES
-settings.session.inter_op_parallelism_threads = NUMCORES
-```
+# Troubleshooting
 
+## Python3.7
 
+TensorFlow1 only supports Python up to version 3.7.
+This presents a slight problem as modern operating systems tend to default 
+to Python3.8.
+In order to install Python3.7 on a Debian-based Linux:
+* Add [the deadsnakes repository](https://github.com/deadsnakes) 
+  via `sudo add-apt-repository ppa:deadsnakes/ppa`. 
+* `sudo apt-get install python3.7-dev python3.7-venv`
 
+## Poetry
+
+It sometimes gets confused when there are multiple Python versions on your system.
+If you're having any strange installation issues at all, we recommend creating 
+a fresh Python3.7 virtual environment and then running poetry commands in it:
+* `python3.7 -m venv .venv`
+* `source .venv/bin/activate`
+
+# Tasks
+
+We use poetry with [taskipy](https://github.com/illBeRoy/taskipy) 
+to ensure standard tasks are easy to run.
+
+Use `poetry run task <task_id>` where `<task_id>` is one of the following:
+* `run_jupyter`. This will start a [jupyter](https://jupyter.org/) server 
+  enabling you to work on notebooks.
+* `all_checks`. This will run the tests, formatting checks and static code analysis.
+* `format`. This will re-format the code according to [black](https://pypi.org/project/black/) 
+  and [isort](https://pypi.org/project/isort/). 
+
+For other `<task_id>` values, please see `pyproject.toml`.
