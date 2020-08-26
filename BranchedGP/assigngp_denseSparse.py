@@ -1,16 +1,15 @@
 # coding: utf-8
-import gpflow
 import numpy as np
 import tensorflow as tf
 from gpflow import settings
-from gpflow.decors import autoflow, params_as_tensors
+from gpflow.decors import params_as_tensors
 from gpflow.params import DataHolder
 
 from . import assigngp_dense
 
 
 class AssignGPSparse(assigngp_dense.AssignGP):
-    """
+    r"""
     Gaussian Process sparse regression, but where the index to which the data are
     assigned is unknown.
 

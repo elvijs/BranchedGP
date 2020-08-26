@@ -115,8 +115,8 @@ def FitModel(
                 }
             )
             ll[ib] = m.compute_log_likelihood()
-        except:
-            print("Failure", "Unexpected error:", sys.exc_info()[0])
+        except Exception as ex:
+            print(f"Unexpected error: {ex}")
             print("-" * 60)
             traceback.print_exc(file=sys.stdout)
             print("Exception caused by model")

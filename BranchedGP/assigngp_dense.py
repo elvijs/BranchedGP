@@ -12,7 +12,7 @@ from . import pZ_construction_singleBP
 
 
 class AssignGP(GPModel):
-    """
+    r"""
     Gaussian Process regression, but where the index to which the data are
     assigned is unknown.
 
@@ -192,6 +192,4 @@ class AssignGP(GPModel):
         return mean, var
 
     def build_KL(self, Phi):
-        Bv_s = tf.squeeze(self.kern.kernels[0].Bv, squeeze_dims=[1])
-        # pZ = pZ_construction_singleBP.make_matrix(self.t, Bv_s, self.phiPrior)
         return tf.reduce_sum(Phi * tf.log(Phi)) - tf.reduce_sum(Phi * tf.log(self.pZ))

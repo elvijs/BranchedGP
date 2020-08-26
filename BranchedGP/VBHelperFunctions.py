@@ -130,9 +130,7 @@ def predictBranchingModel(m, full_cov=False):
             mu, var = m.predict_f_full_cov(Xtest)
         else:
             mu, var = m.predict_f(Xtest)
-        # print('mu', mu)
-        idx = np.isnan(mu)
-        # print('munan', mu[idx], var[idx], ttest[idx])
+
         assert np.all(np.isfinite(mu)), "All elements should be finite but are " + str(mu)
         assert np.all(np.isfinite(var)), "All elements should be finite but are " + str(var)
         mul.append(mu)
