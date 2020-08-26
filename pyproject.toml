@@ -29,7 +29,7 @@ lint = "flake8 --max-line-length 120 BranchedGP"
 format = "task black && task isort"
 check_format = "task black --check && task isort --diff"
 black = "black BranchedGP"
-isort = "isort --atomic BranchedGP/**/*.py"
+isort = "isort --atomic --multi-line 3 --trailing-comma BranchedGP/*.py"
 
 [tool.black]
 line-length = 120
