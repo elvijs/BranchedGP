@@ -70,16 +70,8 @@ class BinaryBranchingTree:
             ntabs += 1
             self._printTree(node.left, ntabs)
             print(
-                "---------" * ntabs
-                + str(node.idB)
-                + "("
-                + str(node.val)
-                + ")"
-                + "["
-                + str(self.dictFunction[node.idB][0])
-                + ","
-                + str(self.dictFunction[node.idB][1])
-                + "]"
+                f"{'---------' * ntabs}{node.idB}({node.val})"
+                f"[{self.dictFunction[node.idB][0]}, {self.dictFunction[node.idB][1]}]"
             )
             self._printTree(node.right, ntabs)
 
@@ -284,7 +276,7 @@ class BinaryBranchingTree:
 
                     if self.fDebug:
                         print("Path to branch point " + str(bid))
-                    assert self.findPath(branchpath, bid) == True
+                    assert self.findPath(branchpath, bid) is True
                     # include all subsequent branch points since they are not visible anyway and will make
                     # matrix well-conditioned
                     node = self._findNode(self.root, bid)  # find the node
@@ -308,16 +300,8 @@ class BinaryBranchingTree:
 
                 branchvalues = self._GetBranchValuesAsArray(branchpath)
                 if self.fDebug:
-                    print(
-                        "Functions "
-                        + str(fi)
-                        + ","
-                        + str(fj)
-                        + " crosspoints "
-                        + str(branchpath)
-                        + ", values "
-                        + str(branchvalues)
-                    )
+                    print(f"Functions {fi}, {fj} crosspoints {branchpath}, values {branchvalues}")
+
                 # fm[fi-1,fj-1,:-(nb - len(branchpath))]=branchpath
                 # fmb[fi-1,fj-1,:-(nb - len(branchpath))]=branchvalues
                 fm[fi - 1, fj - 1, : len(branchpath)] = branchpath
@@ -418,5 +402,5 @@ class BinaryBranchingTree:
             domainF[fi - 1, :] = [lb, ub]
         # check no nans left
         dflat = np.ravel(domainF)
-        assert np.any(np.isnan(dflat)) == False
+        assert np.any(np.isnan(dflat)) is False
         return domainF

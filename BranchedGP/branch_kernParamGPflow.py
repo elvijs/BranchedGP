@@ -1,12 +1,10 @@
 """ Module to replace branch_kern with parameterised version"""
-import gpflow
 import numpy as np
 import tensorflow as tf
 from gpflow import settings
-from gpflow.decors import autoflow, params_as_tensors
+from gpflow.decors import params_as_tensors
 from gpflow.kernels import Kernel
-from gpflow.mean_functions import Zero
-from gpflow.params import DataHolder, Parameter
+from gpflow.params import DataHolder
 from matplotlib import pyplot as plt
 
 from . import VBHelperFunctions
