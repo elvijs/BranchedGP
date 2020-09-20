@@ -12,7 +12,7 @@ dev_install:
 
 
 test:
-	nosetests $(TEST_PATH) --with-coverage
+	nosetests $(TEST_PATH)
 
 jupyter_server:
 	jupyter notebook $(NOTEBOOK_PATH)
