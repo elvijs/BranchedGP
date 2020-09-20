@@ -1,7 +1,7 @@
 # coding: utf-8
 import numpy as np
 import tensorflow as tf
-from gpflow import default_float, default_jitter
+from gpflow import default_float, default_jitter, Parameter
 
 from . import assigngp_dense
 
@@ -53,8 +53,8 @@ class AssignGPSparse(assigngp_dense.AssignGP):
             phiPrior=phiPrior,
         )
         # Do not treat inducing points as parameters because they should always be fixed.
-        self.ZExpanded = ZExpanded  # inducing points for sparse GP. Same as XExpanded
-        # TODO: these were DataHolder in GPflow1, should they change
+        # TODO: this was a DataHolder in TF1 version. Is the following conversion right?
+        self.ZExpanded = Parameter(ZExpanded, trainable=False)  # inducing points for sparse GP. Same as XExpanded
 
         assert ZExpanded.shape[1] == XExpanded.shape[1]
 
