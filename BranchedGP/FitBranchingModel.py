@@ -63,60 +63,60 @@ def FitModel(
     tree = bt.BinaryBranchingTree(0, 1, fDebug=False)
     tree.add(None, 1, np.ones((1, 1)) * ptb)  # B can be anything here
     (fm, _) = tree.GetFunctionBranchTensor()
-    with gpflow.defer_build():
-        kb = bk.BranchKernelParam(
-            gpflow.kernels.Matern32(1), fm, b=np.zeros((1, 1))
-        ) + gpflow.kernels.White(1)
-        kb.kernels[
-            1
-        ].variance = (
-            1e-6  # controls the discontinuity magnitude, the gap at the branching point
+
+    kb = bk.BranchKernelParam(
+        gpflow.kernels.Matern32(1), fm, b=np.zeros((1, 1))
+    ) + gpflow.kernels.White(1)
+
+    # controls the discontinuity magnitude, the gap at the branching point
+    kb.kernels[1].variance = (1e-6)
+
+    kb.kernels[1].variance.set_trainable(False)  # jitter for numerics
+    if M == 0:
+        m = assigngp_dense.AssignGP(
+            GPt,
+            XExpanded,
+            GPy,
+            kb,
+            indices,
+            np.ones((1, 1)) * ptb,
+            phiInitial=phiInitial,
+            phiPrior=phiPrior,
         )
-        kb.kernels[1].variance.set_trainable(False)  # jitter for numerics
-        if M == 0:
-            m = assigngp_dense.AssignGP(
-                GPt,
-                XExpanded,
-                GPy,
-                kb,
-                indices,
-                np.ones((1, 1)) * ptb,
-                phiInitial=phiInitial,
-                phiPrior=phiPrior,
+    else:
+        ZExpanded = np.ones((M, 2))
+        ZExpanded[:, 0] = np.linspace(0, 1, M, endpoint=False)
+        ZExpanded[:, 1] = np.array([i for j in range(M) for i in range(1, 4)])[:M]
+        m = assigngp_denseSparse.AssignGPSparse(
+            GPt,
+            XExpanded,
+            GPy,
+            kb,
+            indices,
+            np.ones((1, 1)) * ptb,
+            ZExpanded,
+            phiInitial=phiInitial,
+            phiPrior=phiPrior,
+        )
+
+    # Initialise hyperparameters
+    m.likelihood.variance = likvar
+    m.kern.kernels[0].kern.lengthscales = kerlen
+    m.kern.kernels[0].kern.variance = kervar
+    if fixHyperparameters:
+        print("Fixing hyperparameters")
+        m.kern.kernels[0].kern.lengthscales.set_trainable(False)
+        m.likelihood.variance.set_trainable(False)
+        m.kern.kernels[0].kern.variance.set_trainable(False)
+    else:
+        if fDebug:
+            print(
+                "Adding prior logistic on length scale to avoid numerical problems"
             )
-        else:
-            ZExpanded = np.ones((M, 2))
-            ZExpanded[:, 0] = np.linspace(0, 1, M, endpoint=False)
-            ZExpanded[:, 1] = np.array([i for j in range(M) for i in range(1, 4)])[:M]
-            m = assigngp_denseSparse.AssignGPSparse(
-                GPt,
-                XExpanded,
-                GPy,
-                kb,
-                indices,
-                np.ones((1, 1)) * ptb,
-                ZExpanded,
-                phiInitial=phiInitial,
-                phiPrior=phiPrior,
-            )
-        # Initialise hyperparameters
-        m.likelihood.variance = likvar
-        m.kern.kernels[0].kern.lengthscales = kerlen
-        m.kern.kernels[0].kern.variance = kervar
-        if fixHyperparameters:
-            print("Fixing hyperparameters")
-            m.kern.kernels[0].kern.lengthscales.set_trainable(False)
-            m.likelihood.variance.set_trainable(False)
-            m.kern.kernels[0].kern.variance.set_trainable(False)
-        else:
-            if fDebug:
-                print(
-                    "Adding prior logistic on length scale to avoid numerical problems"
-                )
-            m.kern.kernels[0].kern.lengthscales.prior = gpflow.priors.Gaussian(2, 0.1)
-            m.kern.kernels[0].kern.variance.prior = gpflow.priors.Gaussian(3, 1)
-            m.likelihood.variance.prior = gpflow.priors.Gaussian(0.1, 0.1)
-        m.compile()
+        m.kern.kernels[0].kern.lengthscales.prior = gpflow.priors.Gaussian(2, 0.1)
+        m.kern.kernels[0].kern.variance.prior = gpflow.priors.Gaussian(3, 1)
+        m.likelihood.variance.prior = gpflow.priors.Gaussian(0.1, 0.1)
+    m.compile()
 
     # optimization
     ll = np.zeros(len(bConsider))
