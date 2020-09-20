@@ -2,7 +2,7 @@
 import gpflow
 import numpy as np
 import tensorflow as tf
-from gpflow import default_float, Parameter
+from gpflow import default_float, default_jitter, Parameter
 from gpflow.mean_functions import Zero
 from gpflow.models.model import GPModel
 from gpflow.params import DataHolder
@@ -172,7 +172,7 @@ class AssignGP(GPModel):
         tau = 1.0 / self.likelihood.variance
         L = (
             tf.cholesky(K)
-            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
@@ -215,7 +215,7 @@ class AssignGP(GPModel):
         sigma2 = self.likelihood.variance
         L = (
             tf.cholesky(K)
-            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())

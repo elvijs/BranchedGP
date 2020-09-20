@@ -1,7 +1,7 @@
 # coding: utf-8
 import numpy as np
 import tensorflow as tf
-from gpflow import default_float
+from gpflow import default_float, default_jitter
 from gpflow.params import DataHolder
 
 from . import assigngp_dense
@@ -74,7 +74,7 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         sigma = tf.sqrt(self.likelihood.variance)
         Kuu = (
             self.kern.K(self.ZExpanded)
-            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         Kuf = self.kern.K(self.ZExpanded, self.X)
 
@@ -122,7 +122,7 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         sigma = tf.sqrt(sigma2)
         Kuu = (
             self.kern.K(self.ZExpanded)
-            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         Kuf = self.kern.K(self.ZExpanded, self.X)
         L = tf.cholesky(Kuu)
