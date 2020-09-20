@@ -41,3 +41,6 @@ mypy:
 	mypy --ignore-missing-imports BranchedGP
 
 static_checks: mypy lint
+
+
+all_checks: static_checks check_format test
