@@ -3,7 +3,6 @@ import gpflow
 import numpy as np
 import tensorflow as tf
 from gpflow import default_float, Parameter
-from gpflow.decors import autoflow, params_as_tensors
 from gpflow.mean_functions import Zero
 from gpflow.models.model import GPModel
 from gpflow.params import DataHolder
@@ -148,7 +147,6 @@ class AssignGP(GPModel):
         assert np.all(phi <= 1 + tolError)
         return phi
 
-    @gpflow.params_as_tensors
     def GetPhiExpanded(self):
         """ Shortcut function to get Phi matrix out."""
         return tf.nn.softmax(self.logPhi)
@@ -158,7 +156,6 @@ class AssignGP(GPModel):
         Unlike _objective, no gradient calculation is performed."""
         return -self.compute_log_likelihood() - self.compute_log_prior()
 
-    @params_as_tensors
     def _build_likelihood(self):
         print("assignegp_dense compiling model (build_likelihood)")
         N = tf.cast(tf.shape(self.Y)[0], dtype=default_float())
@@ -209,7 +206,6 @@ class AssignGP(GPModel):
             a5 = tf.Print(a5, [a5, Phi], message="a5 and Phi=", summarize=10)
         return a1 + a2 + a3 + a4 + a5
 
-    @params_as_tensors
     def _build_predict(self, Xnew, full_cov=False):
         M = tf.shape(self.X)[0]
         K = self.kern.K(self.X)

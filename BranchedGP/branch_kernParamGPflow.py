@@ -2,7 +2,6 @@
 import numpy as np
 import tensorflow as tf
 from gpflow import default_float
-from gpflow.decors import params_as_tensors
 from gpflow.kernels import Kernel
 from gpflow.params import DataHolder
 from matplotlib import pyplot as plt
@@ -87,7 +86,6 @@ class BranchKernelParam(Kernel):
         ), "Before branch point trunk is function 1."
         return SampleKernel(self, XTree, tol=tol)
 
-    @params_as_tensors
     def K(self, X, Y=None):
         if Y is None:
             Y = X  # hack to avoid duplicating code below
@@ -221,7 +219,6 @@ class BranchKernelParam(Kernel):
                         K_s = tf.where(t12F, K_crosss, K_s, name="selectIndex")
         return K_s
 
-    @params_as_tensors
     def Kdiag(self, X):
         return tf.diag_part(
             self.kern.K(X)
@@ -235,7 +232,6 @@ class IndKern(Kernel):
         Kernel.__init__(self, input_dim=base_kern.input_dim + 1)
         self.kern = base_kern
 
-    @params_as_tensors
     def K(self, X, Y=None):
         if Y is None:
             Y = X  # hack to avoid duplicating code below
@@ -253,6 +249,5 @@ class IndKern(Kernel):
         K_s = tf.where(same_functions, Ktt, tf.zeros_like(Ktt))
         return K_s
 
-    @params_as_tensors
     def Kdiag(self, X):
         return tf.diag_part(self.kern.K(X))

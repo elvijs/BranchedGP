@@ -2,7 +2,6 @@
 import numpy as np
 import tensorflow as tf
 from gpflow import default_float
-from gpflow.decors import params_as_tensors
 from gpflow.params import DataHolder
 
 from . import assigngp_dense
@@ -60,7 +59,6 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         )  # inducing points for sparse GP. Same as XExpanded
         assert ZExpanded.shape[1] == XExpanded.shape[1]
 
-    @params_as_tensors
     def _build_likelihood(self):
         if self.fDebug:
             print("assignegp_denseSparse compiling model (build_likelihood)")
@@ -113,7 +111,6 @@ class AssignGPSparse(assigngp_dense.AssignGP):
 
         return self.bound
 
-    @params_as_tensors
     def _build_predict(self, Xnew, full_cov=False):
         M = tf.shape(self.ZExpanded)[0]
 
