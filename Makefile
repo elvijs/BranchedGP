@@ -4,6 +4,7 @@ TEST_REQUIREMENTS=test_requirements.txt
 NOTEBOOK_PATH=notebooks
 
 install:
+	pip install -e .
 	pip install -r $(TEST_REQUIREMENTS)
 
 
