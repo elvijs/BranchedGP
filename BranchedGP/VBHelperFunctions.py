@@ -20,17 +20,30 @@ def CalculateBranchingEvidence(d, Bsearch=None):
     o = d["loglik"]
     Nb = o.size - 1
     if Nb != len(Bsearch) - 1:
-        raise NameError("Passed in wrong length of Bsearch is %g- should be %g" % (len(Bsearch), Nb))
+        raise NameError(
+            "Passed in wrong length of Bsearch is %g- should be %g" % (len(Bsearch), Nb)
+        )
     obj = o[:-1]
     illmax = np.argmax(obj)
     llmax = obj[illmax]
-    lratiostable = llmax + np.log(1 + np.exp(obj[np.arange(obj.size) != illmax] - llmax).sum()) - o[-1] - np.log(Nb)
+    lratiostable = (
+        llmax
+        + np.log(1 + np.exp(obj[np.arange(obj.size) != illmax] - llmax).sum())
+        - o[-1]
+        - np.log(Nb)
+    )
 
     return {"posteriorBranching": p, "logBayesFactor": lratiostable}
 
 
 def PlotBGPFit(
-    GPy, GPt, Bsearch, d, figsize=(5, 5), height_ratios=[5, 1], colorarray=["darkolivegreen", "peru", "mediumvioletred"]
+    GPy,
+    GPt,
+    Bsearch,
+    d,
+    figsize=(5, 5),
+    height_ratios=[5, 1],
+    colorarray=["darkolivegreen", "peru", "mediumvioletred"],
 ):
     """
     Plot BGP model
@@ -44,7 +57,9 @@ def PlotBGPFit(
     :return: dictionary of log likelihood, GPflow model, Phi matrix, predictive set of points,
     mean and variance, hyperparameter values, posterior on branching time
     """
-    fig, axa = plt.subplots(2, 1, figsize=figsize, sharex=True, gridspec_kw={"height_ratios": height_ratios})
+    fig, axa = plt.subplots(
+        2, 1, figsize=figsize, sharex=True, gridspec_kw={"height_ratios": height_ratios}
+    )
     ax = axa[0]
     y, pt, mul, ttestl = GPy, GPt, d["prediction"]["mu"], d["prediction"]["xtest"]
     lw = 4
@@ -54,7 +69,9 @@ def PlotBGPFit(
         col = colorarray[f]  # mean.get_color()
         ax.plot(ttest, mu, linewidth=lw, color=col, alpha=0.7)
         gp_num = 1  # can be 0,1,2 - Plot against this
-        PhiColor = ax.scatter(pt, y, c=d["Phi"][:, gp_num], vmin=0.0, vmax=1, s=40, alpha=0.7)
+        PhiColor = ax.scatter(
+            pt, y, c=d["Phi"][:, gp_num], vmin=0.0, vmax=1, s=40, alpha=0.7
+        )
     _ = fig.colorbar(PhiColor, ax=ax, orientation="horizontal")
     ax = axa[1]
     p = CalculateBranchingEvidence(d, Bsearch)["posteriorBranching"]
@@ -94,8 +111,20 @@ def plotBranchModel(
         col = colorarray[f]  # mean.get_color()
         (mean,) = ax.plot(ttest, mu[:, d], linewidth=lw, color=col)
         if fPlotVar:
-            ax.plot(ttest.flatten(), mu[:, d] + 2 * np.sqrt(var.flatten()), "--", color=col, linewidth=lw)
-            ax.plot(ttest, mu[:, d] - 2 * np.sqrt(var.flatten()), "--", color=col, linewidth=lw)
+            ax.plot(
+                ttest.flatten(),
+                mu[:, d] + 2 * np.sqrt(var.flatten()),
+                "--",
+                color=col,
+                linewidth=lw,
+            )
+            ax.plot(
+                ttest,
+                mu[:, d] - 2 * np.sqrt(var.flatten()),
+                "--",
+                color=col,
+                linewidth=lw,
+            )
     v = ax.axis()
     ax.plot([B, B], v[-2:], "-m", linewidth=lw)
     # Plot Phi or labels
@@ -131,8 +160,12 @@ def predictBranchingModel(m, full_cov=False):
         else:
             mu, var = m.predict_f(Xtest)
 
-        assert np.all(np.isfinite(mu)), "All elements should be finite but are " + str(mu)
-        assert np.all(np.isfinite(var)), "All elements should be finite but are " + str(var)
+        assert np.all(np.isfinite(mu)), "All elements should be finite but are " + str(
+            mu
+        )
+        assert np.all(np.isfinite(var)), "All elements should be finite but are " + str(
+            var
+        )
         mul.append(mu)
         varl.append(var)
         ttestl.append(ttest)
@@ -148,7 +181,9 @@ def GetFunctionIndexListGeneral(Xin):
     XSample = np.zeros((Xin.shape[0], 2), dtype=float)
     Xnew = []
     inew = 0
-    functionList = list(range(1, 4))  # can be assigned to any of root or subbranches, one based counting
+    functionList = list(
+        range(1, 4)
+    )  # can be assigned to any of root or subbranches, one based counting
 
     for ix, x in enumerate(Xin):
         XSample[ix, 0] = Xin[ix]
@@ -167,7 +202,11 @@ def GetFunctionIndexListGeneral(Xin):
 def SetXExpandedBranchingPoint(XExpanded, B):
     """ Return XExpanded by removing unavailable branches """
     # before branching pt, only function 1
-    X1 = XExpanded[np.logical_and(XExpanded[:, 0] <= B, XExpanded[:, 1] == 1).flatten(), :]
+    X1 = XExpanded[
+        np.logical_and(XExpanded[:, 0] <= B, XExpanded[:, 1] == 1).flatten(), :
+    ]
     # after branching pt, only functions 2 and 2
-    X23 = XExpanded[np.logical_and(XExpanded[:, 0] > B, XExpanded[:, 1] != 1).flatten(), :]
+    X23 = XExpanded[
+        np.logical_and(XExpanded[:, 0] > B, XExpanded[:, 1] != 1).flatten(), :
+    ]
     return np.vstack([X1, X23])

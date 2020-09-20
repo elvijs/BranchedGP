@@ -29,12 +29,35 @@ class AssignGPSparse(assigngp_dense.AssignGP):
 
     """
 
-    def __init__(self, t, XExpanded, Y, kern, indices, b, ZExpanded, fDebug=False, phiInitial=None, phiPrior=None):
+    def __init__(
+        self,
+        t,
+        XExpanded,
+        Y,
+        kern,
+        indices,
+        b,
+        ZExpanded,
+        fDebug=False,
+        phiInitial=None,
+        phiPrior=None,
+    ):
         assigngp_dense.AssignGP.__init__(
-            self, t, XExpanded, Y, kern, indices, b, fDebug=fDebug, phiInitial=phiInitial, phiPrior=phiPrior
+            self,
+            t,
+            XExpanded,
+            Y,
+            kern,
+            indices,
+            b,
+            fDebug=fDebug,
+            phiInitial=phiInitial,
+            phiPrior=phiPrior,
         )
         # Do not treat inducing points as parameters because they should always be fixed.
-        self.ZExpanded = DataHolder(ZExpanded)  # inducing points for sparse GP. Same as XExpanded
+        self.ZExpanded = DataHolder(
+            ZExpanded
+        )  # inducing points for sparse GP. Same as XExpanded
         assert ZExpanded.shape[1] == XExpanded.shape[1]
 
     @params_as_tensors
@@ -51,7 +74,10 @@ class AssignGPSparse(assigngp_dense.AssignGP):
 
         sigma2 = self.likelihood.variance
         sigma = tf.sqrt(self.likelihood.variance)
-        Kuu = self.kern.K(self.ZExpanded) + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        Kuu = (
+            self.kern.K(self.ZExpanded)
+            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        )
         Kuf = self.kern.K(self.ZExpanded, self.X)
 
         Kdiag = self.kern.Kdiag(self.X)
@@ -60,13 +86,21 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         LiKuf = tf.matrix_triangular_solve(L, Kuf)
         W = LiKuf * tf.sqrt(A) / sigma
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
-        traceTerm = -0.5 * tf.reduce_sum(Kdiag * A) / sigma2 + 0.5 * tf.reduce_sum(tf.square(W))
+        traceTerm = -0.5 * tf.reduce_sum(Kdiag * A) / sigma2 + 0.5 * tf.reduce_sum(
+            tf.square(W)
+        )
         R = tf.cholesky(P)
         tmp = tf.matmul(LiKuf, tf.matmul(tf.transpose(Phi), self.Y))
         c = tf.matrix_triangular_solve(R, tmp, lower=True) / sigma2
         if self.fDebug:
             # trace term should be 0 for Z=X (full data)
-            traceTerm = tf.Print(traceTerm, [traceTerm], message="traceTerm=", name="traceTerm", summarize=10)
+            traceTerm = tf.Print(
+                traceTerm,
+                [traceTerm],
+                message="traceTerm=",
+                name="traceTerm",
+                summarize=10,
+            )
 
         self.bound = (
             traceTerm
@@ -89,7 +123,10 @@ class AssignGPSparse(assigngp_dense.AssignGP):
 
         sigma2 = self.likelihood.variance
         sigma = tf.sqrt(sigma2)
-        Kuu = self.kern.K(self.ZExpanded) + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        Kuu = (
+            self.kern.K(self.ZExpanded)
+            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        )
         Kuf = self.kern.K(self.ZExpanded, self.X)
         L = tf.cholesky(Kuu)
 
@@ -106,11 +143,19 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         tmp2 = tf.matrix_triangular_solve(R, tmp1, lower=True)
         mean = tf.matmul(tf.transpose(tmp2), c)
         if full_cov:
-            var = self.kern.K(Xnew) + tf.matmul(tf.transpose(tmp2), tmp2) - tf.matmul(tf.transpose(tmp1), tmp1)
+            var = (
+                self.kern.K(Xnew)
+                + tf.matmul(tf.transpose(tmp2), tmp2)
+                - tf.matmul(tf.transpose(tmp1), tmp1)
+            )
             shape = tf.stack([1, 1, tf.shape(self.Y)[1]])
             var = tf.tile(tf.expand_dims(var, 2), shape)
         else:
-            var = self.kern.Kdiag(Xnew) + tf.reduce_sum(tf.square(tmp2), 0) - tf.reduce_sum(tf.square(tmp1), 0)
+            var = (
+                self.kern.Kdiag(Xnew)
+                + tf.reduce_sum(tf.square(tmp2), 0)
+                - tf.reduce_sum(tf.square(tmp1), 0)
+            )
             shape = tf.stack([1, tf.shape(self.Y)[1]])
             var = tf.tile(tf.expand_dims(var, 1), shape)
         return mean, var
