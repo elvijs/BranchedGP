@@ -69,9 +69,9 @@ def FitModel(
     ) + gpflow.kernels.White(1)
 
     # controls the discontinuity magnitude, the gap at the branching point
-    kb.kernels[1].variance = (1e-6)
+    kb.kernels[1].variance.assign(1e-6)
 
-    kb.kernels[1].variance.set_trainable(False)  # jitter for numerics
+    gpflow.set_trainable(kb.kernels[1].variance, False)  # jitter for numerics
     if M == 0:
         m = assigngp_dense.AssignGP(
             GPt,
@@ -130,9 +130,9 @@ def FitModel(
             # remember winning hyperparameter
             hyps.append(
                 {
-                    "likvar": m.likelihood.variance.value,
-                    "kerlen": m.kern.kernels[0].kern.lengthscales.value,
-                    "kervar": m.kern.kernels[0].kern.variance.value,
+                    "likvar": m.likelihood.variance.numpy(),
+                    "kerlen": m.kern.kernels[0].kern.lengthscales.numpy(),
+                    "kervar": m.kern.kernels[0].kern.variance.numpy(),
                 }
             )
             ll[ib] = m.compute_log_likelihood()
