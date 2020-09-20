@@ -7,7 +7,7 @@ install:
 
 
 test:
-	nosetests $(TEST_PATH)
+	nosetests $(TEST_PATH) --with-coverage
 
 jupyter_server:
 	jupyter notebook $(NOTEBOOK_PATH)
