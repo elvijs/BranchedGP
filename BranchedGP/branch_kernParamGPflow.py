@@ -62,7 +62,7 @@ class BranchKernelParam(Kernel):
     def __init__(self, base_kern, branchPtTensor, b, fDebug=False):
         """branchPtTensor is tensor of branch points of size F X F X B where F the number of
         functions and B the number of branching points"""
-        Kernel.__init__(self, input_dim=base_kern.input_dim + 1)
+        super().__init__()
         self.kern = base_kern
         self.fm = branchPtTensor
         self.fDebug = fDebug
@@ -76,7 +76,7 @@ class BranchKernelParam(Kernel):
     def SampleKernel(self, XExpanded, b=None, tol=1e-6):
         if b is not None:
             self.Bv = np.ones((1, 1)) * b
-        XTree = VBHelperFunctions.SetXExpandedBranchingPoint(XExpanded, self.Bv.value)
+        XTree = VBHelperFunctions.SetXExpandedBranchingPoint(XExpanded, self.Bv)
         return SampleKernel(self, XTree, tol=tol), XTree
 
     def SampleKernelFromTree(self, XTree, b, tol=1e-6):
@@ -220,7 +220,7 @@ class BranchKernelParam(Kernel):
                         K_s = tf.where(t12F, K_crosss, K_s, name="selectIndex")
         return K_s
 
-    def Kdiag(self, X):
+    def K_diag(self, X):
         return tf.compat.v1.diag_part(
             self.kern.K(X)
         )  # diagonal is just single point no branch point relevant
@@ -230,7 +230,7 @@ class IndKern(Kernel):
     """ an independent output kernel """
 
     def __init__(self, base_kern):
-        Kernel.__init__(self, input_dim=base_kern.input_dim + 1)
+        super().__init__()
         self.kern = base_kern
 
     def K(self, X, Y=None):
@@ -250,5 +250,5 @@ class IndKern(Kernel):
         K_s = tf.where(same_functions, Ktt, tf.zeros_like(Ktt))
         return K_s
 
-    def Kdiag(self, X):
+    def K_diag(self, X):
         return tf.compat.v1.diag_part(self.kern.K(X))
