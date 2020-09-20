@@ -445,7 +445,10 @@ class BinaryBranchingTree:
                 assert fBinaryId == 0 or fBinaryId == 1
 
             domainF[fi - 1, :] = [lb, ub]
+
         # check no nans left
         dflat = np.ravel(domainF)
-        assert np.any(np.isnan(dflat)) is False
+        at_least_one_nan_in_dflat = np.any(np.isnan(dflat))
+        assert not at_least_one_nan_in_dflat
+
         return domainF
