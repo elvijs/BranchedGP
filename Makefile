@@ -26,7 +26,7 @@ check_format: check_black check_isort
 
 
 isort:
-	isort --skip-glob=.tox --recursive .
+	isort .
 
 black:
 	black .
