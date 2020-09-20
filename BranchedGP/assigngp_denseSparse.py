@@ -78,20 +78,20 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         Kuf = self.kern.K(self.ZExpanded, self.X)
 
         Kdiag = self.kern.Kdiag(self.X)
-        L = tf.cholesky(Kuu)
+        L = tf.compat.v1.cholesky(Kuu)
         A = tf.reduce_sum(Phi, 0)
-        LiKuf = tf.matrix_triangular_solve(L, Kuf)
+        LiKuf = tf.compat.v1.matrix_triangular_solve(L, Kuf)
         W = LiKuf * tf.sqrt(A) / sigma
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
         traceTerm = -0.5 * tf.reduce_sum(Kdiag * A) / sigma2 + 0.5 * tf.reduce_sum(
             tf.square(W)
         )
-        R = tf.cholesky(P)
+        R = tf.compat.v1.cholesky(P)
         tmp = tf.matmul(LiKuf, tf.matmul(tf.transpose(Phi), self.Y))
-        c = tf.matrix_triangular_solve(R, tmp, lower=True) / sigma2
+        c = tf.compat.v1.matrix_triangular_solve(R, tmp, lower=True) / sigma2
         if self.fDebug:
             # trace term should be 0 for Z=X (full data)
-            traceTerm = tf.Print(
+            traceTerm = tf.compat.v1.Print(
                 traceTerm,
                 [traceTerm],
                 message="traceTerm=",
@@ -101,8 +101,8 @@ class AssignGPSparse(assigngp_dense.AssignGP):
 
         self.bound = (
             traceTerm
-            - 0.5 * N * D * tf.log(2 * np.pi * sigma2)
-            - 0.5 * D * tf.reduce_sum(tf.log(tf.square(tf.diag_part(R))))
+            - 0.5 * N * D * tf.compat.v1.log(2 * np.pi * sigma2)
+            - 0.5 * D * tf.reduce_sum(tf.compat.v1.log(tf.square(tf.compat.v1.diag_part(R))))
             - 0.5 * tf.reduce_sum(tf.square(self.Y)) / sigma2
             + 0.5 * tf.reduce_sum(tf.square(c))
             - self.build_KL(Phi)
@@ -124,19 +124,19 @@ class AssignGPSparse(assigngp_dense.AssignGP):
             + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         Kuf = self.kern.K(self.ZExpanded, self.X)
-        L = tf.cholesky(Kuu)
+        L = tf.compat.v1.cholesky(Kuu)
 
         p = tf.reduce_sum(Phi, 0)
-        LiKuf = tf.matrix_triangular_solve(L, Kuf)
+        LiKuf = tf.compat.v1.matrix_triangular_solve(L, Kuf)
         W = LiKuf * tf.sqrt(p) / sigma
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
-        R = tf.cholesky(P)
+        R = tf.compat.v1.cholesky(P)
         tmp = tf.matmul(LiKuf, tf.matmul(tf.transpose(Phi), self.Y))
-        c = tf.matrix_triangular_solve(R, tmp, lower=True) / sigma2
+        c = tf.compat.v1.matrix_triangular_solve(R, tmp, lower=True) / sigma2
 
         Kus = self.kern.K(self.ZExpanded, Xnew)
-        tmp1 = tf.matrix_triangular_solve(L, Kus, lower=True)
-        tmp2 = tf.matrix_triangular_solve(R, tmp1, lower=True)
+        tmp1 = tf.compat.v1.matrix_triangular_solve(L, Kus, lower=True)
+        tmp2 = tf.compat.v1.matrix_triangular_solve(R, tmp1, lower=True)
         mean = tf.matmul(tf.transpose(tmp2), c)
         if full_cov:
             var = (

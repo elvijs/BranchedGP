@@ -170,39 +170,39 @@ class AssignGP(GPModel):
         sigma2 = self.likelihood.variance
         tau = 1.0 / self.likelihood.variance
         L = (
-            tf.cholesky(K)
+            tf.compat.v1.cholesky(K)
             + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
-        R = tf.cholesky(P)
+        R = tf.compat.v1.cholesky(P)
         PhiY = tf.matmul(tf.transpose(Phi), self.Y)
         LPhiY = tf.matmul(tf.transpose(L), PhiY)
         if self.fDebug:
-            Phi = tf.Print(Phi, [tf.shape(P), P], message="P=", name="P", summarize=10)
-            Phi = tf.Print(
+            Phi = tf.compat.v1.Print(Phi, [tf.shape(P), P], message="P=", name="P", summarize=10)
+            Phi = tf.compat.v1.Print(
                 Phi,
                 [tf.shape(LPhiY), LPhiY],
                 message="LPhiY=",
                 name="LPhiY",
                 summarize=10,
             )
-            Phi = tf.Print(Phi, [tf.shape(K), K], message="K=", name="K", summarize=10)
-            Phi = tf.Print(Phi, [tau], message="tau=", name="tau", summarize=10)
-        c = tf.matrix_triangular_solve(R, LPhiY, lower=True) / sigma2
+            Phi = tf.compat.v1.Print(Phi, [tf.shape(K), K], message="K=", name="K", summarize=10)
+            Phi = tf.compat.v1.Print(Phi, [tau], message="tau=", name="tau", summarize=10)
+        c = tf.compat.v1.matrix_triangular_solve(R, LPhiY, lower=True) / sigma2
         # compute KL
         KL = self.build_KL(Phi)
-        a1 = -0.5 * N * D * tf.log(2.0 * np.pi / tau)
-        a2 = -0.5 * D * tf.reduce_sum(tf.log(tf.square(tf.diag_part(R))))
+        a1 = -0.5 * N * D * tf.compat.v1.log(2.0 * np.pi / tau)
+        a2 = -0.5 * D * tf.reduce_sum(tf.compat.v1.log(tf.square(tf.compat.v1.diag_part(R))))
         a3 = -0.5 * tf.reduce_sum(tf.square(self.Y)) / sigma2
         a4 = +0.5 * tf.reduce_sum(tf.square(c))
         a5 = -KL
         if self.fDebug:
-            a1 = tf.Print(a1, [a1], message="a1=")
-            a2 = tf.Print(a2, [a2], message="a2=")
-            a3 = tf.Print(a3, [a3], message="a3=")
-            a4 = tf.Print(a4, [a4], message="a4=")
-            a5 = tf.Print(a5, [a5, Phi], message="a5 and Phi=", summarize=10)
+            a1 = tf.compat.v1.Print(a1, [a1], message="a1=")
+            a2 = tf.compat.v1.Print(a2, [a2], message="a2=")
+            a3 = tf.compat.v1.Print(a3, [a3], message="a3=")
+            a4 = tf.compat.v1.Print(a4, [a4], message="a4=")
+            a5 = tf.compat.v1.Print(a5, [a5, Phi], message="a5 and Phi=", summarize=10)
         return a1 + a2 + a3 + a4 + a5
 
     def _build_predict(self, Xnew, full_cov=False):
@@ -213,18 +213,18 @@ class AssignGP(GPModel):
         Phi = (1 - 2e-6) * Phi + 1e-6
         sigma2 = self.likelihood.variance
         L = (
-            tf.cholesky(K)
+            tf.compat.v1.cholesky(K)
             + tf.eye(M, dtype=default_float()) * default_jitter()
         )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
-        R = tf.cholesky(P)
+        R = tf.compat.v1.cholesky(P)
         PhiY = tf.matmul(tf.transpose(Phi), self.Y)
         LPhiY = tf.matmul(tf.transpose(L), PhiY)
-        c = tf.matrix_triangular_solve(R, LPhiY, lower=True) / sigma2
+        c = tf.compat.v1.matrix_triangular_solve(R, LPhiY, lower=True) / sigma2
         Kus = self.kern.K(self.X, Xnew)
-        tmp1 = tf.matrix_triangular_solve(L, Kus, lower=True)
-        tmp2 = tf.matrix_triangular_solve(R, tmp1, lower=True)
+        tmp1 = tf.compat.v1.matrix_triangular_solve(L, Kus, lower=True)
+        tmp2 = tf.compat.v1.matrix_triangular_solve(R, tmp1, lower=True)
         mean = tf.matmul(tf.transpose(tmp2), c)
         if full_cov:
             var = (
@@ -245,4 +245,4 @@ class AssignGP(GPModel):
         return mean, var
 
     def build_KL(self, Phi):
-        return tf.reduce_sum(Phi * tf.log(Phi)) - tf.reduce_sum(Phi * tf.log(self.pZ))
+        return tf.reduce_sum(Phi * tf.compat.v1.log(Phi)) - tf.reduce_sum(Phi * tf.compat.v1.log(self.pZ))

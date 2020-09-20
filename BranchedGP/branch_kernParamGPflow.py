@@ -98,14 +98,14 @@ class BranchKernelParam(Kernel):
         i2s_r = tf.expand_dims(Y[:, 1], 1)
         if self.fDebug:
             snl = 10  # how many entries to print
-            i1s = tf.Print(
+            i1s = tf.compat.v1.Print(
                 i1s_r,
                 [tf.shape(i1s_r), i1s_r],
                 message="i1s=",
                 name="i1sdebug",
                 summarize=snl,
             )  # will print message
-            i2s = tf.Print(
+            i2s = tf.compat.v1.Print(
                 i2s_r,
                 [tf.shape(i2s_r), i2s_r],
                 message="i2s=",
@@ -161,7 +161,7 @@ class BranchKernelParam(Kernel):
                         # Get the actual values of the Bs = B[index of relevant branching points]
                         bint = bnan.astype(int)  # convert to int - set of indexes
                         if self.fDebug:
-                            Br = tf.Print(
+                            Br = tf.compat.v1.Print(
                                 self.Bv,
                                 [tf.shape(self.Bv), self.Bv],
                                 message="Bv=",
@@ -176,38 +176,38 @@ class BranchKernelParam(Kernel):
 
                         kbb = (
                             self.kern.K(Bs)
-                            + tf.diag(
+                            + tf.compat.v1.diag(
                                 tf.ones(tf.shape(Bs)[:1], dtype=default_float())
                             )
                             * default_jitter()
                         )
                         if self.fDebug:
-                            kbb = tf.Print(
+                            kbb = tf.compat.v1.Print(
                                 kbb,
                                 [tf.shape(kbb), kbb],
                                 message="kbb=",
                                 name="kbb",
                                 summarize=10,
                             )
-                            kbb = tf.Print(
+                            kbb = tf.compat.v1.Print(
                                 kbb,
                                 [self.kern.lengthscales],
                                 message="lenscales=",
                                 name="lenscales",
                                 summarize=10,
                             )
-                            kbb = tf.Print(
+                            kbb = tf.compat.v1.Print(
                                 kbb,
                                 [self.kern.variance],
                                 message="variance=",
                                 name="lenscales",
                                 summarize=10,
                             )
-                            kbb = tf.Print(
+                            kbb = tf.compat.v1.Print(
                                 kbb, [Bs], message="Bs=", name="Bs", summarize=10
                             )
 
-                        Kbbs_inv = tf.matrix_inverse(kbb, name="invKbb")  # B X B
+                        Kbbs_inv = tf.compat.v1.matrix_inverse(kbb, name="invKbb")  # B X B
                         Kb1s = self.kern.K(t1s, Bs)  # N*m X B
                         Kb2s = self.kern.K(t2s, Bs)  # N*m X B
 
@@ -220,7 +220,7 @@ class BranchKernelParam(Kernel):
         return K_s
 
     def Kdiag(self, X):
-        return tf.diag_part(
+        return tf.compat.v1.diag_part(
             self.kern.K(X)
         )  # diagonal is just single point no branch point relevant
 
@@ -250,4 +250,4 @@ class IndKern(Kernel):
         return K_s
 
     def Kdiag(self, X):
-        return tf.diag_part(self.kern.K(X))
+        return tf.compat.v1.diag_part(self.kern.K(X))
