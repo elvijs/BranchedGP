@@ -2,11 +2,11 @@
 import gpflow
 import numpy as np
 import tensorflow as tf
-from gpflow import default_float
+from gpflow import default_float, Parameter
 from gpflow.decors import autoflow, params_as_tensors
 from gpflow.mean_functions import Zero
 from gpflow.models.model import GPModel
-from gpflow.params import DataHolder, Parameter
+from gpflow.params import DataHolder
 
 from . import pZ_construction_singleBP
 
