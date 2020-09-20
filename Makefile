@@ -1,3 +1,4 @@
+PACKAGE_PATH=BranchedGP
 TEST_PATH=testing
 TEST_REQUIREMENTS=test_requirements.txt
 NOTEBOOK_PATH=notebooks
@@ -35,10 +36,10 @@ format: isort black
 
 
 lint:
-	flake8 --max-line-length 120 BranchedGP
+	flake8 --max-line-length 120 $(TEST_PATH) $(PACKAGE_PATH)
 
 mypy:
-	mypy --ignore-missing-imports BranchedGP
+	mypy --ignore-missing-imports .
 
 static_checks: mypy lint
 
