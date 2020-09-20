@@ -8,8 +8,7 @@ import traceback
 import unittest
 
 import nbformat
-from nbconvert.preprocessors import ExecutePreprocessor
-from nbconvert.preprocessors.execute import CellExecutionError
+from nbconvert.preprocessors.execute import CellExecutionError, ExecutePreprocessor
 from nose.plugins.attrib import attr
 
 
@@ -31,6 +30,7 @@ class TestNotebooks(unittest.TestCase):
                     % notebook_filename,
                 )
 
+    @unittest.skip("Failing as of Sep-2020, to be fixed after upgrading to TF2")
     def test_all_notebooks(self):
         """ Test all notebooks except blacklist. Blacklisted notebooks take too long."""
         print("testing all notebooks")
@@ -39,14 +39,16 @@ class TestNotebooks(unittest.TestCase):
         this_dir = os.path.dirname(__file__)
         nbpath = os.path.join(this_dir, "../notebooks/")
         # see http://nbconvert.readthedocs.io/en/stable/execute_api.html
-        # ep = ExecutePreprocessor(timeout=120, kernel_name=pythonkernel, interrupt_on_timeout=True)
-        # lfiles = glob.glob(nbpath+"*.ipynb")
-        # for notebook_filename in lfiles:
-        #     if(os.path.basename(notebook_filename) not in blacklist):
-        #         print('>> Testing notebook', notebook_filename)
-        #         t = time.time()
-        #         self._execNotebook(ep, notebook_filename, nbpath)
-        #         print(notebook_filename, 'took %g seconds.' % (time.time()-t))
+        ep = ExecutePreprocessor(
+            timeout=120, kernel_name=pythonkernel, interrupt_on_timeout=True
+        )
+        lfiles = glob.glob(nbpath + "*.ipynb")
+        for notebook_filename in lfiles:
+            if os.path.basename(notebook_filename) not in blacklist:
+                print(">> Testing notebook", notebook_filename)
+                t = time.time()
+                self._execNotebook(ep, notebook_filename, nbpath)
+                print(notebook_filename, "took %g seconds." % (time.time() - t))
 
 
 if __name__ == "__main__":

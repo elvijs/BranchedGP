@@ -22,7 +22,7 @@ class TestKL(unittest.TestCase):
         N = 20
         t = np.linspace(0, 1, N)
         print(t)
-        trueB = np.ones((1, 1)) * 0.5
+
         Y = np.zeros((N, 1))
         idx = np.nonzero(t > 0.5)[0]
         idxA = idx[::2]
@@ -60,12 +60,12 @@ class TestKL(unittest.TestCase):
         Kbranch2 = bk.BranchKernelParam(
             gpflow.kernels.Matern32(1), fm1, b=np.ones((1, 1)) * 0.20, fDebug=fDebug
         )
-        K2 = Kbranch2.compute_K(XExpanded, XExpanded)
+        _ = Kbranch2.compute_K(XExpanded, XExpanded)
 
         Kbranch3 = bk.BranchKernelParam(
             gpflow.kernels.Matern32(1), fm1, b=np.ones((1, 1)) * 0.22, fDebug=fDebug
         )
-        K3 = Kbranch3.compute_K(XExpanded, XExpanded)
+        _ = Kbranch3.compute_K(XExpanded, XExpanded)
 
         # Look at model
         kb = bk.BranchKernelParam(
@@ -77,7 +77,9 @@ class TestKL(unittest.TestCase):
             1e-6  # controls the discontinuity magnitude, the gap at the branching point
         )
         kb.kernels[1].variance.set_trainable(False)  # jitter for numerics
-        # m = assigngp_dense.AssignGP(t, XExpanded, Y, kb, indices, np.ones((1, 1)), phiInitial=phiInitial, phiPrior=phiPrior)
+        # m = assigngp_dense.AssignGP(
+        #     t, XExpanded, Y, kb, indices, np.ones((1, 1)), phiInitial=phiInitial, phiPrior=phiPrior
+        # )
         m = assigngp_dense.AssignGP(
             t,
             XExpanded,
