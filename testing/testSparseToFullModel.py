@@ -63,16 +63,15 @@ class TestSparseVariational(unittest.TestCase):
         Kbranch = bk.BranchKernelParam(
             gpflow.kernels.Matern32(1), fm, b=trueB.copy()
         ) + gpflow.kernels.White(1)
-        Kbranch.kernels[0].kern.variance = 1
-        Kbranch.kernels[
-            1
-        ].variance = (
-            1e-6  # controls the discontinuity magnitude, the gap at the branching point
-        )
-        Kbranch.kernels[1].variance.set_trainable(False)  # jitter for numerics
-        print("Kbranch matrix", Kbranch.compute_K(XExpanded, XExpanded))
+        Kbranch.kernels[0].kern.variance.assign(1)
+
+        # controls the discontinuity magnitude, the gap at the branching point
+        Kbranch.kernels[1].variance.assign(1e-6)
+
+        gpflow.set_trainable(Kbranch.kernels[1].variance, False)  # jitter for numerics
+        print("Kbranch matrix", Kbranch.K(XExpanded, XExpanded))
         print("Branching K free parameters", Kbranch.kernels[0])
-        print("Branching K branching parameter", Kbranch.kernels[0].Bv.value)
+        print("Branching K branching parameter", Kbranch.kernels[0].Bv.numpy())
         if M is not None:
             ir = np.random.choice(XExpanded.shape[0], M)
             ZExpanded = XExpanded[ir, :]
@@ -86,7 +85,7 @@ class TestSparseVariational(unittest.TestCase):
             Y,
             Kbranch,
             indices,
-            Kbranch.kernels[0].Bv.value,
+            Kbranch.kernels[0].Bv.numpy(),
             ZExpanded,
             phiInitial=phiInitial,
             fDebug=fDebug,
@@ -99,7 +98,7 @@ class TestSparseVariational(unittest.TestCase):
             Y,
             Kbranch,
             indices,
-            Kbranch.kernels[0].Bv.value,
+            Kbranch.kernels[0].Bv.numpy(),
             fDebug=fDebug,
             phiInitial=phiInitial,
         )
@@ -115,7 +114,7 @@ class TestSparseVariational(unittest.TestCase):
 
         # check models identical
         assert np.all(mV.GetPhiExpanded() == mVFull.GetPhiExpanded())
-        assert mV.likelihood.variance.value == mVFull.likelihood.variance.value
+        assert mV.likelihood.variance.numpy() == mVFull.likelihood.variance.numpy()
         assert mV.kern is mVFull.kern
 
         # Test prediction

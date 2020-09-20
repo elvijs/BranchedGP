@@ -66,7 +66,7 @@ class TestSparseVariational(unittest.TestCase):
             Y,
             Kbranch,
             indices,
-            Kbranch.kernels[0].Bv.value,
+            Kbranch.kernels[0].Bv.numpy(),
             phiPrior=phiPrior,
             phiInitial=phiInitial,
         )
@@ -96,7 +96,7 @@ class TestSparseVariational(unittest.TestCase):
         )
         # reset model and test informative KL prior
         m.UpdateBranchingPoint(
-            Kbranch.kernels[0].Bv.value, phiInitial
+            Kbranch.kernels[0].Bv.numpy(), phiInitial
         )  # reset initial phi
         InitKernParams(m)
         ll_flatprior = m.compute_log_likelihood()
@@ -104,7 +104,7 @@ class TestSparseVariational(unittest.TestCase):
         phiInfPrior[-1, :] = [0.99, 0.01]
         # phiInfPrior[-2, :] = [0.01, 0.99]
         m.UpdateBranchingPoint(
-            Kbranch.kernels[0].Bv.value, phiInitial, prior=phiInfPrior
+            Kbranch.kernels[0].Bv.numpy(), phiInitial, prior=phiInfPrior
         )
         ll_betterprior = m.compute_log_likelihood()
         assert ll_betterprior > ll_flatprior, "%f <> %f" % (
