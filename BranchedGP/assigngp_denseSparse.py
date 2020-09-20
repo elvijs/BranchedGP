@@ -2,7 +2,6 @@
 import numpy as np
 import tensorflow as tf
 from gpflow import default_float, default_jitter
-from gpflow.params import DataHolder
 
 from . import assigngp_dense
 
@@ -54,9 +53,9 @@ class AssignGPSparse(assigngp_dense.AssignGP):
             phiPrior=phiPrior,
         )
         # Do not treat inducing points as parameters because they should always be fixed.
-        self.ZExpanded = DataHolder(
-            ZExpanded
-        )  # inducing points for sparse GP. Same as XExpanded
+        self.ZExpanded = ZExpanded  # inducing points for sparse GP. Same as XExpanded
+        # TODO: these were DataHolder in GPflow1, should they change
+
         assert ZExpanded.shape[1] == XExpanded.shape[1]
 
     def _build_likelihood(self):

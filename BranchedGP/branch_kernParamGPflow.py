@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow as tf
 from gpflow import default_float, default_jitter
 from gpflow.kernels import Kernel
-from gpflow.params import DataHolder
 from matplotlib import pyplot as plt
 
 from . import VBHelperFunctions
@@ -70,7 +69,8 @@ class BranchKernelParam(Kernel):
         assert isinstance(b, np.ndarray)
         assert self.fm.shape[0] == self.fm.shape[1]
         assert self.fm.shape[2] > 0
-        self.Bv = DataHolder(b)
+        self.Bv = b
+        # TODO: this was a DataHolder in GPflow1
 
     def SampleKernel(self, XExpanded, b=None, tol=1e-6):
         if b is not None:

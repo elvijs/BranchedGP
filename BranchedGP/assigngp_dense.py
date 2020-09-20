@@ -5,7 +5,6 @@ import tensorflow as tf
 from gpflow import default_float, default_jitter, Parameter
 from gpflow.mean_functions import Zero
 from gpflow.models.model import GPModel
-from gpflow.params import DataHolder
 
 from . import pZ_construction_singleBP
 
@@ -69,7 +68,7 @@ class AssignGP(GPModel):
         if phiPrior is None:
             phiPrior = np.ones((self.N, 2)) * 0.5
         # Fix prior term - this is without trunk
-        self.pZ = DataHolder(np.ones((t.shape[0], t.shape[0] * 3)))
+        self.pZ = np.ones((t.shape[0], t.shape[0] * 3))
         self.UpdateBranchingPoint(b, phiInitial, prior=phiPrior)
         self.KConst = KConst
         if not fDebug:
@@ -77,20 +76,20 @@ class AssignGP(GPModel):
 
     def UpdateBranchingPoint(self, b, phiInitial, prior=None):
         """ Function to update branching point and optionally reset initial conditions for variational phi"""
-        assert isinstance(self.pZ, DataHolder), "Must have DataHolder"
+        assert isinstance(self.pZ, np.ndarray)
         assert isinstance(b, np.ndarray)
         assert b.size == 1, "Must have scalar branching point"
         self.b = b.astype(default_float())  # remember branching value
         assert self.kern.kernels[0].name == "BranchKernelParam"
         self.kern.kernels[0].Bv = b
-        assert isinstance(self.kern.kernels[0].Bv, DataHolder)
+        # assert isinstance(self.kern.kernels[0].Bv, DataHolder)  TODO: what should this check be?
         assert (
             self.logPhi.trainable is True
         ), "Phi should not be constant when changing branching location"
         if prior is not None:
             self.eZ0 = pZ_construction_singleBP.expand_pZ0Zeros(prior)
         self.pZ = pZ_construction_singleBP.expand_pZ0PureNumpyZeros(self.eZ0, b, self.t)
-        assert isinstance(self.pZ, DataHolder), "Must have DataHolder"
+        assert isinstance(self.pZ, np.ndarray)
         self.InitialiseVariationalPhi(phiInitial)
 
     def InitialiseVariationalPhi(self, phiInitialIn):
