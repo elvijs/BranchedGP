@@ -15,13 +15,13 @@ class TestpZ(unittest.TestCase):
         np.set_printoptions(suppress=True, precision=2)
         X = np.linspace(0, 1, 4, dtype=float)[:, None]
         X = np.sort(X, 0)
-        BP_tf = tf.placeholder(default_float(), shape=[])
-        eZ0_tf = tf.placeholder(default_float(), shape=(X.shape[0], X.shape[0] * 3))
+        BP_tf = tf.compat.v1.placeholder(default_float(), shape=[])
+        eZ0_tf = tf.compat.v1.placeholder(default_float(), shape=(X.shape[0], X.shape[0] * 3))
         pZ0 = np.array([[0.7, 0.3], [0.1, 0.9], [0.5, 0.5], [1, 0]])
         eZ0 = pZ_construction_singleBP.expand_pZ0(pZ0)
         for BP in [0, 0.2, 0.5, 1]:
             print("========== BP %.2f ===========" % BP)
-            pZ = tf.Session().run(
+            pZ = tf.compat.v1.Session().run(
                 pZ_construction_singleBP.make_matrix(X, BP, eZ0_tf),
                 feed_dict={BP_tf: BP, eZ0_tf: eZ0},
             )
@@ -49,14 +49,14 @@ class TestpZ(unittest.TestCase):
         np.set_printoptions(suppress=True, precision=6)
         # X = np.linspace(0, 1, 4, dtype=float)[:, None]
         X = np.array([0.1, 0.2, 0.3, 0.4])[:, None]
-        BP_tf = tf.placeholder(dtype=default_float(), shape=[])
-        eZ0_tf = tf.placeholder(
+        BP_tf = tf.compat.v1.placeholder(dtype=default_float(), shape=[])
+        eZ0_tf = tf.compat.v1.placeholder(
             dtype=default_float(), shape=(X.shape[0], X.shape[0] * 3)
         )
         pZ0 = np.array([[0.7, 0.3], [0.1, 0.9], [0.5, 0.5], [0.85, 0.15]])
         eZ0 = pZ_construction_singleBP.expand_pZ0(pZ0)
         BP = 0.2
-        pZ = tf.Session().run(
+        pZ = tf.compat.v1.Session().run(
             pZ_construction_singleBP.make_matrix(X, BP_tf, eZ0_tf),
             feed_dict={BP_tf: BP, eZ0_tf: eZ0},
         )
@@ -85,7 +85,7 @@ class TestpZ(unittest.TestCase):
         assert np.allclose(r, pZ, atol=1e-5)
 
         # try another
-        pZ = tf.Session().run(
+        pZ = tf.compat.v1.Session().run(
             pZ_construction_singleBP.make_matrix(X, BP_tf, eZ0_tf),
             feed_dict={BP_tf: 0.3, eZ0_tf: eZ0},
         )
