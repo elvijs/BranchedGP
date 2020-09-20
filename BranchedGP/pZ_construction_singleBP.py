@@ -38,7 +38,7 @@ def expand_pZ0(pZ0):
 
 
 def make_matrix(X, BP, eZ0, epsilon=1e-6):
-    """ Compute pZ which is N by N*3 matrix of prior assignment.
+    """Compute pZ which is N by N*3 matrix of prior assignment.
     This code has to be consistent with assigngp_dense.InitialiseVariationalPhi to where
         the equality is placed i.e. if x<=b trunk and if x>b branch or vice versa. We use the
          former convention."""

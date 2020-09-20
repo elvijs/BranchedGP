@@ -72,9 +72,9 @@ class TestpZ(unittest.TestCase):
             else:
                 assert np.allclose(
                     pZ[r, c : c + 3], np.array([1.0, 0.0, 0.0]), atol=1e-6
-                ), (
-                    "must be the same! %s-%s"
-                    % (str(pZ[r, c : c + 3]), str(np.array([1.0, 0.0, 0.0])))
+                ), "must be the same! %s-%s" % (
+                    str(pZ[r, c : c + 3]),
+                    str(np.array([1.0, 0.0, 0.0])),
                 )
         #     from matplotlib import pyplot as plt
         #     plt.ion()
