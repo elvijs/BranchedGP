@@ -17,7 +17,9 @@ def checkIndices(indices, XForKernel, Xtrue):
 def GenFunctionName(branchPoint, branchNumber=0):
     assert branchPoint > 0  # Branch id should be non-zero positive
     assert branchNumber == 0 or branchNumber == 1
-    return (branchPoint << 1) + branchNumber  # store in least significant bit function id (0/1)
+    return (
+        branchPoint << 1
+    ) + branchNumber  # store in least significant bit function id (0/1)
 
 
 def GetBranchPtFromFunctionName(functionNumber):
@@ -55,7 +57,9 @@ class BranchingPt:
 class BinaryBranchingTree:
     def __init__(self, lbX, ubX, fDebug=False):
         self.root = None
-        self.dictBranch = {}  # dictionary of branching points and their values for quick access
+        self.dictBranch = (
+            {}
+        )  # dictionary of branching points and their values for quick access
         self.dictFunction = {}
         self.lbX = lbX  # lower bound of X
         self.ubX = ubX  # upper bound of X
@@ -165,13 +169,22 @@ class BinaryBranchingTree:
         # Add branching point
         if val < self.lbX or val > self.ubX:
             raise NameError(
-                "Value of node= " + str(val) + " outside bounds [" + str(self.lbX) + "," + str(self.ubX) + "] "
+                "Value of node= "
+                + str(val)
+                + " outside bounds ["
+                + str(self.lbX)
+                + ","
+                + str(self.ubX)
+                + "] "
             )
 
         if self.root is None:
             self.root = BranchingPt(idB, val)
             self.dictBranch[idB] = val
-            self.dictFunction[idB] = [GenFunctionName(idB, 0), GenFunctionName(idB, 1)]  # left and right is important
+            self.dictFunction[idB] = [
+                GenFunctionName(idB, 0),
+                GenFunctionName(idB, 1),
+            ]  # left and right is important
         else:
             node = self.find(idParent)
             if node is None:
@@ -179,15 +192,23 @@ class BinaryBranchingTree:
             else:
                 # found the node - it's branching value better be less than ours
                 if node.val > val:
-                    raise NameError("Trying to add node with greater branch value than parent")
+                    raise NameError(
+                        "Trying to add node with greater branch value than parent"
+                    )
                 if node.left is None:
                     node.left = BranchingPt(idB, val)
                     self.dictBranch[idB] = val
-                    self.dictFunction[idB] = [GenFunctionName(idB, 0), GenFunctionName(idB, 1)]
+                    self.dictFunction[idB] = [
+                        GenFunctionName(idB, 0),
+                        GenFunctionName(idB, 1),
+                    ]
                 elif node.right is None:
                     node.right = BranchingPt(idB, val)
                     self.dictBranch[idB] = val
-                    self.dictFunction[idB] = [GenFunctionName(idB, 0), GenFunctionName(idB, 1)]
+                    self.dictFunction[idB] = [
+                        GenFunctionName(idB, 0),
+                        GenFunctionName(idB, 1),
+                    ]
                 else:
                     raise NameError("Trying to add node to node with two children")
 
@@ -238,7 +259,12 @@ class BinaryBranchingTree:
             functionPath.append(GenFunctionName(node.idB, 1))  # right is 1
             self._findFunctionPath(node.right, pathBranch, functionPath)
         else:
-            NameError("Could not find child node id  " + str(idBSearch) + " for myself  " + str(node.idB))
+            NameError(
+                "Could not find child node id  "
+                + str(idBSearch)
+                + " for myself  "
+                + str(node.idB)
+            )
 
     def GetFunctionBranchTensor(self):
         # Create M X M X B tensor that maps function values to branch values
@@ -284,7 +310,9 @@ class BinaryBranchingTree:
                     if fBin == 0 and node.left is not None:  # 0 is left
                         self._GetAllNestedBranchPts(node.left, bid, branchpathFollowing)
                     elif fBin == 1 and node.right is not None:  # 1 is right
-                        self._GetAllNestedBranchPts(node.right, bid, branchpathFollowing)
+                        self._GetAllNestedBranchPts(
+                            node.right, bid, branchpathFollowing
+                        )
                     else:
                         assert fBin == 0 or fBin == 1
 
@@ -295,12 +323,21 @@ class BinaryBranchingTree:
                     # not subsets - they are on different baths, use LCA
                     branchpath = self.findLCAPath(bid_i, bid_j)
                     if self.fDebug:
-                        print("LCA path of (" + str(fi) + "," + str(fj) + ") is " + str(branchpath))
+                        print(
+                            "LCA path of ("
+                            + str(fi)
+                            + ","
+                            + str(fj)
+                            + ") is "
+                            + str(branchpath)
+                        )
                     assert len(branchpath) > 0
 
                 branchvalues = self._GetBranchValuesAsArray(branchpath)
                 if self.fDebug:
-                    print(f"Functions {fi}, {fj} crosspoints {branchpath}, values {branchvalues}")
+                    print(
+                        f"Functions {fi}, {fj} crosspoints {branchpath}, values {branchvalues}"
+                    )
 
                 # fm[fi-1,fj-1,:-(nb - len(branchpath))]=branchpath
                 # fmb[fi-1,fj-1,:-(nb - len(branchpath))]=branchvalues
@@ -337,21 +374,29 @@ class BinaryBranchingTree:
         df = self.GetFunctionDomains()
         indicesBranch = []
         if np.any(Xin <= df[0, 0]):
-            raise NameError("Value passed in at or less than lower bound " + str(df[0, 0]))
+            raise NameError(
+                "Value passed in at or less than lower bound " + str(df[0, 0])
+            )
         if np.any(Xin > df[-1, 1]):
-            raise NameError("Value passed in greater than upper bound " + str(df[-1, 1]))
+            raise NameError(
+                "Value passed in greater than upper bound " + str(df[-1, 1])
+            )
 
         Xtrue = np.zeros((Xin.shape[0], 2), dtype=float)
         Xnew = []
         inew = 0
         for ix, x in enumerate(Xin):
-            assignTo = (x > df[:, 0]) & (x <= df[:, 1])  # does where equality is matter check tree search?
+            assignTo = (x > df[:, 0]) & (
+                x <= df[:, 1]
+            )  # does where equality is matter check tree search?
             Xtrue[ix, 0] = Xin[ix]
             functionList = list(np.flatnonzero(assignTo))
             Xtrue[ix, 1] = np.random.choice(functionList) + 1  # one based counting
             idx = []
             for f in functionList:
-                Xnew.append([x, f + 1])  # could have 1 or 0 based function list - does kernel care?
+                Xnew.append(
+                    [x, f + 1]
+                )  # could have 1 or 0 based function list - does kernel care?
                 idx.append(inew)
                 inew = inew + 1
             indicesBranch.append(idx)

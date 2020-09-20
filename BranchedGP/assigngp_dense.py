@@ -32,14 +32,35 @@ class AssignGP(GPModel):
 
     """
 
-    def __init__(self, t, XExpanded, Y, kern, indices, b, phiPrior=None, phiInitial=None, fDebug=False, KConst=None):
-        GPModel.__init__(self, XExpanded, Y, kern, likelihood=gpflow.likelihoods.Gaussian(), mean_function=Zero())
+    def __init__(
+        self,
+        t,
+        XExpanded,
+        Y,
+        kern,
+        indices,
+        b,
+        phiPrior=None,
+        phiInitial=None,
+        fDebug=False,
+        KConst=None,
+    ):
+        GPModel.__init__(
+            self,
+            XExpanded,
+            Y,
+            kern,
+            likelihood=gpflow.likelihoods.Gaussian(),
+            mean_function=Zero(),
+        )
         assert len(indices) == t.size, "indices must be size N"
         assert len(t.shape) == 1, "pseudotime should be 1D"
         self.N = t.shape[0]
         self.t = t.astype(settings.float_type)  # could be DataHolder? advantages
         self.indices = indices
-        self.logPhi = Parameter(np.random.randn(t.shape[0], t.shape[0] * 3))  # 1 branch point => 3 functions
+        self.logPhi = Parameter(
+            np.random.randn(t.shape[0], t.shape[0] * 3)
+        )  # 1 branch point => 3 functions
         if phiInitial is None:
             phiInitial = np.ones((self.N, 2)) * 0.5  # dont know anything
             phiInitial[:, 0] = np.random.rand(self.N)
@@ -64,7 +85,9 @@ class AssignGP(GPModel):
         assert self.kern.kernels[0].name == "BranchKernelParam"
         self.kern.kernels[0].Bv = b
         assert isinstance(self.kern.kernels[0].Bv, DataHolder)
-        assert self.logPhi.trainable is True, "Phi should not be constant when changing branching location"
+        assert (
+            self.logPhi.trainable is True
+        ), "Phi should not be constant when changing branching location"
         if prior is not None:
             self.eZ0 = pZ_construction_singleBP.expand_pZ0Zeros(prior)
         self.pZ = pZ_construction_singleBP.expand_pZ0PureNumpyZeros(self.eZ0, b, self.t)
@@ -76,8 +99,12 @@ class AssignGP(GPModel):
         This code has to be consistent with pZ_construction.singleBP.make_matrix to where
         the equality is placed i.e. if x<=b trunk and if x>b branch or vice versa. We use the
          former convention."""
-        assert np.allclose(phiInitialIn.sum(1), 1), "probs must sum to 1 %s" % str(phiInitialIn)
-        assert self.b == self.kern.kernels[0].Bv.value, "Need to call UpdateBranchingPoint"
+        assert np.allclose(phiInitialIn.sum(1), 1), "probs must sum to 1 %s" % str(
+            phiInitialIn
+        )
+        assert (
+            self.b == self.kern.kernels[0].Bv.value
+        ), "Need to call UpdateBranchingPoint"
         N = self.Y.value.shape[0]
         assert phiInitialIn.shape[0] == N
         assert phiInitialIn.shape[1] == 2  # run OMGP with K=2 trajectories
@@ -88,18 +115,30 @@ class AssignGP(GPModel):
         iterC = 0
         for i, p in enumerate(self.t):
             if p > self.b:  # before branching - it's the root
-                phiInitialEx[i, iterC : iterC + 3] = np.hstack([eps, phiInitialIn[i, :] - eps])
+                phiInitialEx[i, iterC : iterC + 3] = np.hstack(
+                    [eps, phiInitialIn[i, :] - eps]
+                )
             else:
-                phiInitialEx[i, iterC : iterC + 3] = np.array([1 - 2 * eps, 0 + eps, 0 + eps])
-            phiInitial_invSoftmax[i, iterC : iterC + 3] = np.log(phiInitialEx[i, iterC : iterC + 3])
+                phiInitialEx[i, iterC : iterC + 3] = np.array(
+                    [1 - 2 * eps, 0 + eps, 0 + eps]
+                )
+            phiInitial_invSoftmax[i, iterC : iterC + 3] = np.log(
+                phiInitialEx[i, iterC : iterC + 3]
+            )
             iterC += 3
-        assert not np.any(np.isnan(phiInitialEx)), "no nans please " + str(np.nonzero(np.isnan(phiInitialEx)))
-        assert not np.any(phiInitialEx < -eps), "no negatives please " + str(np.nonzero(np.isnan(phiInitialEx)))
+        assert not np.any(np.isnan(phiInitialEx)), "no nans please " + str(
+            np.nonzero(np.isnan(phiInitialEx))
+        )
+        assert not np.any(phiInitialEx < -eps), "no negatives please " + str(
+            np.nonzero(np.isnan(phiInitialEx))
+        )
         self.logPhi = phiInitial_invSoftmax
 
     def GetPhi(self):
         """ Get Phi matrix, collapsed for each possible entry """
-        assert self.b == self.kern.kernels[0].Bv.value, "Need to call UpdateBranchingPoint"
+        assert (
+            self.b == self.kern.kernels[0].Bv.value
+        ), "Need to call UpdateBranchingPoint"
         phiExpanded = self.GetPhiExpanded()
         l = [phiExpanded[i, self.indices[i]] for i in range(len(self.indices))]
         phi = np.asarray(l)
@@ -135,7 +174,10 @@ class AssignGP(GPModel):
         Phi = (1 - 2e-6) * Phi + 1e-6
         sigma2 = self.likelihood.variance
         tau = 1.0 / self.likelihood.variance
-        L = tf.cholesky(K) + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        L = (
+            tf.cholesky(K)
+            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
         R = tf.cholesky(P)
@@ -143,7 +185,13 @@ class AssignGP(GPModel):
         LPhiY = tf.matmul(tf.transpose(L), PhiY)
         if self.fDebug:
             Phi = tf.Print(Phi, [tf.shape(P), P], message="P=", name="P", summarize=10)
-            Phi = tf.Print(Phi, [tf.shape(LPhiY), LPhiY], message="LPhiY=", name="LPhiY", summarize=10)
+            Phi = tf.Print(
+                Phi,
+                [tf.shape(LPhiY), LPhiY],
+                message="LPhiY=",
+                name="LPhiY",
+                summarize=10,
+            )
             Phi = tf.Print(Phi, [tf.shape(K), K], message="K=", name="K", summarize=10)
             Phi = tf.Print(Phi, [tau], message="tau=", name="tau", summarize=10)
         c = tf.matrix_triangular_solve(R, LPhiY, lower=True) / sigma2
@@ -170,7 +218,10 @@ class AssignGP(GPModel):
         # try squashing Phi to avoid numerical errors
         Phi = (1 - 2e-6) * Phi + 1e-6
         sigma2 = self.likelihood.variance
-        L = tf.cholesky(K) + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        L = (
+            tf.cholesky(K)
+            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+        )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
         P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
         R = tf.cholesky(P)
@@ -182,11 +233,19 @@ class AssignGP(GPModel):
         tmp2 = tf.matrix_triangular_solve(R, tmp1, lower=True)
         mean = tf.matmul(tf.transpose(tmp2), c)
         if full_cov:
-            var = self.kern.K(Xnew) + tf.matmul(tf.transpose(tmp2), tmp2) - tf.matmul(tf.transpose(tmp1), tmp1)
+            var = (
+                self.kern.K(Xnew)
+                + tf.matmul(tf.transpose(tmp2), tmp2)
+                - tf.matmul(tf.transpose(tmp1), tmp1)
+            )
             shape = tf.stack([1, 1, tf.shape(self.Y)[1]])
             var = tf.tile(tf.expand_dims(var, 2), shape)
         else:
-            var = self.kern.Kdiag(Xnew) + tf.reduce_sum(tf.square(tmp2), 0) - tf.reduce_sum(tf.square(tmp1), 0)
+            var = (
+                self.kern.Kdiag(Xnew)
+                + tf.reduce_sum(tf.square(tmp2), 0)
+                - tf.reduce_sum(tf.square(tmp1), 0)
+            )
             shape = tf.stack([1, tf.shape(self.Y)[1]])
             var = tf.tile(tf.expand_dims(var, 1), shape)
         return mean, var

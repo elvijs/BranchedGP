@@ -82,7 +82,9 @@ class BranchKernelParam(Kernel):
     def SampleKernelFromTree(self, XTree, b, tol=1e-6):
         """ Sample kernel with assignments already done. """
         self.Bv = np.ones((1, 1)) * b
-        assert np.all(XTree[XTree[:, 0] <= b, 1] == 1), "Before branch point trunk is function 1."
+        assert np.all(
+            XTree[XTree[:, 0] <= b, 1] == 1
+        ), "Before branch point trunk is function 1."
         return SampleKernel(self, XTree, tol=tol)
 
     @params_as_tensors
@@ -99,10 +101,18 @@ class BranchKernelParam(Kernel):
         if self.fDebug:
             snl = 10  # how many entries to print
             i1s = tf.Print(
-                i1s_r, [tf.shape(i1s_r), i1s_r], message="i1s=", name="i1sdebug", summarize=snl
+                i1s_r,
+                [tf.shape(i1s_r), i1s_r],
+                message="i1s=",
+                name="i1sdebug",
+                summarize=snl,
             )  # will print message
             i2s = tf.Print(
-                i2s_r, [tf.shape(i2s_r), i2s_r], message="i2s=", name="i2sdebug", summarize=snl
+                i2s_r,
+                [tf.shape(i2s_r), i2s_r],
+                message="i2s=",
+                name="i2sdebug",
+                summarize=snl,
             )  # will print message
         else:
             i1s = i1s_r
@@ -114,8 +124,12 @@ class BranchKernelParam(Kernel):
 
         Ktts = self.kern.K(t1s, t2s)  # N*M X N*M
         with tf.name_scope("kttscope"):  # scope
-            same_functions = tf.equal(i1s_matrix, tf.transpose(i2s_matrix), name="FiEQFj")
-            K_s = tf.where(same_functions, Ktts, Ktts, name="selectFiEQFj")  # just setup matrix with block diagonal
+            same_functions = tf.equal(
+                i1s_matrix, tf.transpose(i2s_matrix), name="FiEQFj"
+            )
+            K_s = tf.where(
+                same_functions, Ktts, Ktts, name="selectFiEQFj"
+            )  # just setup matrix with block diagonal
 
         m = self.fm.shape[0]
         for fi in range(m):
@@ -130,52 +144,88 @@ class BranchKernelParam(Kernel):
                         i1s_matrixInt = tf.cast(i1s_matrix, tf.int32, name="casti1s")
                         i2s_matrixTInt = tf.cast(i2s_matrixT, tf.int32, name="casti2s")
 
-                        fiFilter = fi_s * tf.ones_like(i1s_matrixInt, tf.int32, name="fiFilter")
-                        fjFilter = fj_s * tf.ones_like(i2s_matrixTInt, tf.int32, name="fjFilter")  # must be transpose
+                        fiFilter = fi_s * tf.ones_like(
+                            i1s_matrixInt, tf.int32, name="fiFilter"
+                        )
+                        fjFilter = fj_s * tf.ones_like(
+                            i2s_matrixTInt, tf.int32, name="fjFilter"
+                        )  # must be transpose
 
                         f1F = tf.equal(i1s_matrixInt, fiFilter, name="indexF" + str(fi))
-                        f2F = tf.equal(i2s_matrixTInt, fjFilter, name="indexF" + str(fj))
+                        f2F = tf.equal(
+                            i2s_matrixTInt, fjFilter, name="indexF" + str(fj)
+                        )
 
-                        t12F = tf.logical_and(f1F, f2F, name="F" + str(fi) + "andF" + str(fj))
+                        t12F = tf.logical_and(
+                            f1F, f2F, name="F" + str(fi) + "andF" + str(fj)
+                        )
 
                         # Get the actual values of the Bs = B[index of relevant branching points]
                         bint = bnan.astype(int)  # convert to int - set of indexes
                         if self.fDebug:
                             Br = tf.Print(
-                                self.Bv, [tf.shape(self.Bv), self.Bv], message="Bv=", name="Bv", summarize=3
+                                self.Bv,
+                                [tf.shape(self.Bv), self.Bv],
+                                message="Bv=",
+                                name="Bv",
+                                summarize=3,
                             )  # will print message
                         else:
                             Br = self.Bv
-                        Bs = tf.concat([tf.slice(Br, [i - 1, 0], [1, 1]) for i in bint], 0)
+                        Bs = tf.concat(
+                            [tf.slice(Br, [i - 1, 0], [1, 1]) for i in bint], 0
+                        )
 
                         kbb = (
                             self.kern.K(Bs)
-                            + tf.diag(tf.ones(tf.shape(Bs)[:1], dtype=settings.float_type))
+                            + tf.diag(
+                                tf.ones(tf.shape(Bs)[:1], dtype=settings.float_type)
+                            )
                             * settings.numerics.jitter_level
                         )
                         if self.fDebug:
-                            kbb = tf.Print(kbb, [tf.shape(kbb), kbb], message="kbb=", name="kbb", summarize=10)
                             kbb = tf.Print(
-                                kbb, [self.kern.lengthscales], message="lenscales=", name="lenscales", summarize=10
+                                kbb,
+                                [tf.shape(kbb), kbb],
+                                message="kbb=",
+                                name="kbb",
+                                summarize=10,
                             )
                             kbb = tf.Print(
-                                kbb, [self.kern.variance], message="variance=", name="lenscales", summarize=10
+                                kbb,
+                                [self.kern.lengthscales],
+                                message="lenscales=",
+                                name="lenscales",
+                                summarize=10,
                             )
-                            kbb = tf.Print(kbb, [Bs], message="Bs=", name="Bs", summarize=10)
+                            kbb = tf.Print(
+                                kbb,
+                                [self.kern.variance],
+                                message="variance=",
+                                name="lenscales",
+                                summarize=10,
+                            )
+                            kbb = tf.Print(
+                                kbb, [Bs], message="Bs=", name="Bs", summarize=10
+                            )
 
                         Kbbs_inv = tf.matrix_inverse(kbb, name="invKbb")  # B X B
                         Kb1s = self.kern.K(t1s, Bs)  # N*m X B
                         Kb2s = self.kern.K(t2s, Bs)  # N*m X B
 
                         a = tf.matmul(Kb1s, Kbbs_inv)
-                        K_crosss = tf.matmul(a, tf.transpose(Kb2s), name="Kt1_Bi_invBB_KBt2")
+                        K_crosss = tf.matmul(
+                            a, tf.transpose(Kb2s), name="Kt1_Bi_invBB_KBt2"
+                        )
 
                         K_s = tf.where(t12F, K_crosss, K_s, name="selectIndex")
         return K_s
 
     @params_as_tensors
     def Kdiag(self, X):
-        return tf.diag_part(self.kern.K(X))  # diagonal is just single point no branch point relevant
+        return tf.diag_part(
+            self.kern.K(X)
+        )  # diagonal is just single point no branch point relevant
 
 
 class IndKern(Kernel):
