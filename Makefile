@@ -20,13 +20,13 @@ check_black:
 	black --check .
 
 check_isort:
-	isort --diff
+	isort --diff .
 
 check_format: check_black check_isort
 
 
 isort:
-	isort
+	isort .
 
 black:
 	black .
