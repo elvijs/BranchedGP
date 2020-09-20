@@ -3,7 +3,6 @@ import unittest
 
 import gpflow
 import numpy as np
-from gpflow import settings
 
 # Branching files
 from BranchedGP import BranchingTree as bt
@@ -12,7 +11,6 @@ from BranchedGP import branch_kernParamGPflow as bk
 
 class TestKernelSampling(unittest.TestCase):
     def test(self):
-        N = 3  # how many points per function
         tree = bt.BinaryBranchingTree(
             0, 10, fDebug=False
         )  # set to true to print debug messages
@@ -33,29 +31,21 @@ class TestKernelSampling(unittest.TestCase):
         KbranchParam.kern.lengthscales = 2
         KbranchParam.kern.variance = 1
 
-        K = KbranchParam.compute_K(Xtrue, Xtrue)
+        _ = KbranchParam.compute_K(Xtrue, Xtrue)
         assert KbranchParam.Bv.value == 0.5
 
-        samples, L, K = bk.SampleKernel(
-            KbranchParam, XForKernel, D=1, tol=1e-6, retChol=True
-        )
-        samples2 = bk.SampleKernel(
-            KbranchParam, XForKernel, D=1, tol=1e-6, retChol=False
-        )
+        _ = bk.SampleKernel(KbranchParam, XForKernel, D=1, tol=1e-6, retChol=True)
+        _ = bk.SampleKernel(KbranchParam, XForKernel, D=1, tol=1e-6, retChol=False)
 
         # Also try the independent kernel
         indKernel = bk.IndKern(gpflow.kernels.RBF(1))
-        samples3, L, K = bk.SampleKernel(
-            indKernel, XForKernel, D=1, tol=1e-6, retChol=True
-        )
+        _ = bk.SampleKernel(indKernel, XForKernel, D=1, tol=1e-6, retChol=True)
 
-        samples4 = KbranchParam.SampleKernel(XForKernel, b=Bvalues)
+        _ = KbranchParam.SampleKernel(XForKernel, b=Bvalues)
 
         XAssignments = bk.GetFunctionIndexSample(t)  # assign to either branch randomly
         XAssignments[XAssignments[:, 0] <= tree.GetBranchValues(), 1] = 1
-        samples5 = KbranchParam.SampleKernelFromTree(
-            XAssignments, b=tree.GetBranchValues()
-        )
+        _ = KbranchParam.SampleKernelFromTree(XAssignments, b=tree.GetBranchValues())
 
         # if you want to plot
         # from matplotlib import pyplot as plt
