@@ -1,7 +1,7 @@
 # coding: utf-8
 import numpy as np
 import tensorflow as tf
-from gpflow import settings
+from gpflow import default_float
 from gpflow.decors import params_as_tensors
 from gpflow.params import DataHolder
 
@@ -64,9 +64,9 @@ class AssignGPSparse(assigngp_dense.AssignGP):
     def _build_likelihood(self):
         if self.fDebug:
             print("assignegp_denseSparse compiling model (build_likelihood)")
-        N = tf.cast(tf.shape(self.Y)[0], dtype=settings.float_type)
+        N = tf.cast(tf.shape(self.Y)[0], dtype=default_float())
         M = tf.shape(self.ZExpanded)[0]
-        D = tf.cast(tf.shape(self.Y)[1], dtype=settings.float_type)
+        D = tf.cast(tf.shape(self.Y)[1], dtype=default_float())
 
         Phi = tf.nn.softmax(self.logPhi)
         # try squashing Phi to avoid numerical errors
@@ -76,7 +76,7 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         sigma = tf.sqrt(self.likelihood.variance)
         Kuu = (
             self.kern.K(self.ZExpanded)
-            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
         )
         Kuf = self.kern.K(self.ZExpanded, self.X)
 
@@ -85,7 +85,7 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         A = tf.reduce_sum(Phi, 0)
         LiKuf = tf.matrix_triangular_solve(L, Kuf)
         W = LiKuf * tf.sqrt(A) / sigma
-        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
+        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
         traceTerm = -0.5 * tf.reduce_sum(Kdiag * A) / sigma2 + 0.5 * tf.reduce_sum(
             tf.square(W)
         )
@@ -125,7 +125,7 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         sigma = tf.sqrt(sigma2)
         Kuu = (
             self.kern.K(self.ZExpanded)
-            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
         )
         Kuf = self.kern.K(self.ZExpanded, self.X)
         L = tf.cholesky(Kuu)
@@ -133,7 +133,7 @@ class AssignGPSparse(assigngp_dense.AssignGP):
         p = tf.reduce_sum(Phi, 0)
         LiKuf = tf.matrix_triangular_solve(L, Kuf)
         W = LiKuf * tf.sqrt(p) / sigma
-        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
+        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
         R = tf.cholesky(P)
         tmp = tf.matmul(LiKuf, tf.matmul(tf.transpose(Phi), self.Y))
         c = tf.matrix_triangular_solve(R, tmp, lower=True) / sigma2

@@ -2,7 +2,7 @@
 import gpflow
 import numpy as np
 import tensorflow as tf
-from gpflow import settings
+from gpflow import default_float
 from gpflow.decors import autoflow, params_as_tensors
 from gpflow.mean_functions import Zero
 from gpflow.models.model import GPModel
@@ -56,7 +56,7 @@ class AssignGP(GPModel):
         assert len(indices) == t.size, "indices must be size N"
         assert len(t.shape) == 1, "pseudotime should be 1D"
         self.N = t.shape[0]
-        self.t = t.astype(settings.float_type)  # could be DataHolder? advantages
+        self.t = t.astype(default_float())  # could be DataHolder? advantages
         self.indices = indices
         self.logPhi = Parameter(
             np.random.randn(t.shape[0], t.shape[0] * 3)
@@ -81,7 +81,7 @@ class AssignGP(GPModel):
         assert isinstance(self.pZ, DataHolder), "Must have DataHolder"
         assert isinstance(b, np.ndarray)
         assert b.size == 1, "Must have scalar branching point"
-        self.b = b.astype(settings.float_type)  # remember branching value
+        self.b = b.astype(default_float())  # remember branching value
         assert self.kern.kernels[0].name == "BranchKernelParam"
         self.kern.kernels[0].Bv = b
         assert isinstance(self.kern.kernels[0].Bv, DataHolder)
@@ -148,7 +148,6 @@ class AssignGP(GPModel):
         assert np.all(phi <= 1 + tolError)
         return phi
 
-    @autoflow()
     @gpflow.params_as_tensors
     def GetPhiExpanded(self):
         """ Shortcut function to get Phi matrix out."""
@@ -162,11 +161,11 @@ class AssignGP(GPModel):
     @params_as_tensors
     def _build_likelihood(self):
         print("assignegp_dense compiling model (build_likelihood)")
-        N = tf.cast(tf.shape(self.Y)[0], dtype=settings.float_type)
+        N = tf.cast(tf.shape(self.Y)[0], dtype=default_float())
         M = tf.shape(self.X)[0]
-        D = tf.cast(tf.shape(self.Y)[1], dtype=settings.float_type)
+        D = tf.cast(tf.shape(self.Y)[1], dtype=default_float())
         if self.KConst is not None:
-            K = tf.cast(self.KConst, settings.float_type)
+            K = tf.cast(self.KConst, default_float())
         else:
             K = self.kern.K(self.X)
         Phi = tf.nn.softmax(self.logPhi)
@@ -176,10 +175,10 @@ class AssignGP(GPModel):
         tau = 1.0 / self.likelihood.variance
         L = (
             tf.cholesky(K)
-            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
         )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
-        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
+        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
         R = tf.cholesky(P)
         PhiY = tf.matmul(tf.transpose(Phi), self.Y)
         LPhiY = tf.matmul(tf.transpose(L), PhiY)
@@ -220,10 +219,10 @@ class AssignGP(GPModel):
         sigma2 = self.likelihood.variance
         L = (
             tf.cholesky(K)
-            + tf.eye(M, dtype=settings.float_type) * settings.numerics.jitter_level
+            + tf.eye(M, dtype=default_float()) * settings.numerics.jitter_level
         )
         W = tf.transpose(L) * tf.sqrt(tf.reduce_sum(Phi, 0)) / tf.sqrt(sigma2)
-        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=settings.float_type)
+        P = tf.matmul(W, tf.transpose(W)) + tf.eye(M, dtype=default_float())
         R = tf.cholesky(P)
         PhiY = tf.matmul(tf.transpose(Phi), self.Y)
         LPhiY = tf.matmul(tf.transpose(L), PhiY)

@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from gpflow import settings
+from gpflow import default_float
 
 
 def expand_pZ0Zeros(pZ0, epsilon=1e-6):
@@ -52,16 +52,16 @@ def make_matrix(X, BP, eZ0, epsilon=1e-6):
         # n == 1 when x <= BP
         # n == 2 when x > BP
         row = [
-            tf.zeros(count + n - 1, dtype=settings.float_type) + epsilon
+            tf.zeros(count + n - 1, dtype=default_float()) + epsilon
         ]  # all entries until count are zero
         # add 1's for possible entries
-        probs = tf.ones(n, dtype=settings.float_type)
+        probs = tf.ones(n, dtype=default_float())
         row.append(probs)
         row.append(
-            tf.zeros(2 - 2 * (n - 1), dtype=settings.float_type) + epsilon
+            tf.zeros(2 - 2 * (n - 1), dtype=default_float()) + epsilon
         )  # append zero
         count += 3
-        row.append(tf.zeros(num_columns - count, dtype=settings.float_type) + epsilon)
+        row.append(tf.zeros(num_columns - count, dtype=default_float()) + epsilon)
         # ensure things are correctly shaped
         row = tf.concat(row, 0, name="singleconcat")
         row = tf.expand_dims(row, 0)

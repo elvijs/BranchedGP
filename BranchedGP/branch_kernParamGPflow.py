@@ -1,7 +1,7 @@
 """ Module to replace branch_kern with parameterised version"""
 import numpy as np
 import tensorflow as tf
-from gpflow import settings
+from gpflow import default_float
 from gpflow.decors import params_as_tensors
 from gpflow.kernels import Kernel
 from gpflow.params import DataHolder
@@ -179,7 +179,7 @@ class BranchKernelParam(Kernel):
                         kbb = (
                             self.kern.K(Bs)
                             + tf.diag(
-                                tf.ones(tf.shape(Bs)[:1], dtype=settings.float_type)
+                                tf.ones(tf.shape(Bs)[:1], dtype=default_float())
                             )
                             * settings.numerics.jitter_level
                         )
