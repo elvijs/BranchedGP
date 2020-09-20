@@ -101,9 +101,9 @@ class AssignGP(GPModel):
             phiInitialIn
         )
         assert (
-            self.b == self.kern.kernels[0].Bv.value
+            self.b == self.kern.kernels[0].Bv.numpy()
         ), "Need to call UpdateBranchingPoint"
-        N = self.Y.value.shape[0]
+        N = self.Y.numpy().shape[0]
         assert phiInitialIn.shape[0] == N
         assert phiInitialIn.shape[1] == 2  # run OMGP with K=2 trajectories
         phiInitialEx = np.zeros((N, 3 * N))
@@ -135,7 +135,7 @@ class AssignGP(GPModel):
     def GetPhi(self):
         """ Get Phi matrix, collapsed for each possible entry """
         assert (
-            self.b == self.kern.kernels[0].Bv.value
+            self.b == self.kern.kernels[0].Bv.numpy()
         ), "Need to call UpdateBranchingPoint"
         phiExpanded = self.GetPhiExpanded()
         l = [phiExpanded[i, self.indices[i]] for i in range(len(self.indices))]
