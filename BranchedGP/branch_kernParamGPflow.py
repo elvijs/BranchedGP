@@ -36,7 +36,7 @@ def PlotSample(X, samples, B=None, lw=5.0, fs=20, figsizeIn=(5, 5)):
 
 def SampleKernel(kern, X, D=1, tol=1e-6, retChol=False):
     """ Sample GP, D is number of independent output dimensions """
-    K = kern.compute_K(X, X)  # NxM
+    K = kern.K(X, X)  # NxM
     L = np.linalg.cholesky(K + np.eye(K.shape[0]) * tol)
     samples = L.dot(np.random.randn(L.shape[0], D))
     if retChol:

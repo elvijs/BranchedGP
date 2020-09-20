@@ -31,8 +31,8 @@ class TestKernelSampling(unittest.TestCase):
         KbranchParam.kern.lengthscales = 2
         KbranchParam.kern.variance = 1
 
-        _ = KbranchParam.compute_K(Xtrue, Xtrue)
-        assert KbranchParam.Bv.value == 0.5
+        _ = KbranchParam.K(Xtrue, Xtrue)
+        assert KbranchParam.Bv.numpy() == 0.5
 
         _ = bk.SampleKernel(KbranchParam, XForKernel, D=1, tol=1e-6, retChol=True)
         _ = bk.SampleKernel(KbranchParam, XForKernel, D=1, tol=1e-6, retChol=False)

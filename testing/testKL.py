@@ -55,17 +55,17 @@ class TestKL(unittest.TestCase):
         Kbranch1 = bk.BranchKernelParam(
             gpflow.kernels.Matern32(1), fm1, b=np.ones((1, 1)) * ptb, fDebug=fDebug
         )
-        K1 = Kbranch1.compute_K(XExpanded, XExpanded)
+        K1 = Kbranch1.K(XExpanded, XExpanded)
 
         Kbranch2 = bk.BranchKernelParam(
             gpflow.kernels.Matern32(1), fm1, b=np.ones((1, 1)) * 0.20, fDebug=fDebug
         )
-        _ = Kbranch2.compute_K(XExpanded, XExpanded)
+        _ = Kbranch2.K(XExpanded, XExpanded)
 
         Kbranch3 = bk.BranchKernelParam(
             gpflow.kernels.Matern32(1), fm1, b=np.ones((1, 1)) * 0.22, fDebug=fDebug
         )
-        _ = Kbranch3.compute_K(XExpanded, XExpanded)
+        _ = Kbranch3.K(XExpanded, XExpanded)
 
         # Look at model
         kb = bk.BranchKernelParam(
