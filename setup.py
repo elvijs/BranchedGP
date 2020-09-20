@@ -26,5 +26,8 @@ setup(
     license=LICENSE,
     packages=["BranchedGP"],
     package_data={},
-    install_requires=["tensorflow==1.15.3", "gpflow==1.5.1",],
+    install_requires=[
+        "tensorflow==1.15.3",
+        "gpflow==1.5.1",
+    ],
 )

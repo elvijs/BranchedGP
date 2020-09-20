@@ -95,7 +95,7 @@ class AssignGP(GPModel):
         self.InitialiseVariationalPhi(phiInitial)
 
     def InitialiseVariationalPhi(self, phiInitialIn):
-        """ Set initial state for Phi using branching location to constrain.
+        """Set initial state for Phi using branching location to constrain.
         This code has to be consistent with pZ_construction.singleBP.make_matrix to where
         the equality is placed i.e. if x<=b trunk and if x>b branch or vice versa. We use the
          former convention."""
@@ -155,7 +155,7 @@ class AssignGP(GPModel):
         return tf.nn.softmax(self.logPhi)
 
     def objectiveFun(self):
-        """ Objective function to minimize - log likelihood -log prior.
+        """Objective function to minimize - log likelihood -log prior.
         Unlike _objective, no gradient calculation is performed."""
         return -self.compute_log_likelihood() - self.compute_log_prior()
 

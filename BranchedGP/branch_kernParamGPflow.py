@@ -62,8 +62,8 @@ def GetFunctionIndexSample(Xin):
 
 class BranchKernelParam(Kernel):
     def __init__(self, base_kern, branchPtTensor, b, fDebug=False):
-        """ branchPtTensor is tensor of branch points of size F X F X B where F the number of
-        functions and B the number of branching points """
+        """branchPtTensor is tensor of branch points of size F X F X B where F the number of
+        functions and B the number of branching points"""
         Kernel.__init__(self, input_dim=base_kern.input_dim + 1)
         self.kern = base_kern
         self.fm = branchPtTensor
